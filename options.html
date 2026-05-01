@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>DocRefGen — Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f8fc;
+      --surface: #ffffff;
+      --border: #e4e7f0;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --text: #111827;
+      --muted: #6b7280;
+      --danger: #dc2626;
+      --warn: #d97706;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: #111827;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px; font-weight: 600; letter-spacing: -0.3px;
+    }
+
+    .topbar-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    /* ── Layout ── */
+    .page { max-width: 620px; margin: 36px auto; padding: 0 24px; }
+
+    /* ── About card ── */
+    .about-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid #111827;
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+    }
+
+    .about-card h2 {
+      font-size: 15px; font-weight: 600; margin-bottom: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .about-card p {
+      font-size: 13px; color: #374151;
+      line-height: 1.7; margin-bottom: 14px;
+    }
+
+    .about-card p:last-child { margin-bottom: 0; }
+
+    .features-list {
+      margin: 0 0 14px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .features-list li {
+      font-size: 13px; color: #374151;
+      line-height: 1.6; padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex; gap: 8px;
+    }
+
+    .features-list li:last-child { border-bottom: none; }
+
+    .features-list li::before {
+      content: '→';
+      color: var(--accent);
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .about-card code {
+      background: #f0f0f8;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+    }
+
+    .about-card a {
+      color: var(--accent); text-decoration: none; font-weight: 500;
+    }
+    .about-card a:hover { text-decoration: underline; }
+
+    /* ── Preview bar ── */
+    .preview-bar {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .preview-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--green); font-weight: 500;
+    }
+
+    .preview-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px; font-weight: 600;
+      color: var(--green); letter-spacing: 0.5px;
+    }
+
+    /* ── Section ── */
+    .section { margin-bottom: 28px; }
+
+    .section-title {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted);
+      font-weight: 600; margin-bottom: 10px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── Field ── */
+    .field {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+    .field:focus-within { border-color: var(--accent); }
+
+    .field label {
+      display: block; font-size: 12px;
+      font-weight: 600; color: var(--text); margin-bottom: 5px;
+    }
+
+    .field .hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+
+    .field input[type="text"] {
+      width: 100%; background: transparent;
+      border: none; outline: none;
+      color: var(--accent);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 17px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .field input::placeholder { color: #c4c9d8; font-weight: 400; font-size: 15px; }
+
+    .field input.sheet-input {
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 400;
+    }
+
+    /* ── Toggle ── */
+    .toggle-field {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 13px 16px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+
+    .toggle-field label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 2px; }
+    .toggle-field .hint { font-size: 11px; color: var(--muted); }
+
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--border); border-radius: 24px; cursor: pointer; transition: 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+      background: white; border-radius: 50%; transition: 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* ── Verify ── */
+    .verify-btn {
+      display: inline-block; margin-top: 8px;
+      padding: 6px 14px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      cursor: pointer; color: var(--accent); transition: all 0.15s;
+    }
+    .verify-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .sheet-status { font-size: 11px; color: var(--muted); margin-top: 6px; min-height: 16px; }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+
+    .btn {
+      flex: 1; padding: 12px; border-radius: 9px; border: none;
+      cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; font-weight: 600; transition: all 0.15s;
+    }
+
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: transparent; color: var(--muted); border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--danger); color: var(--danger); }
+
+    .save-status {
+      text-align: center; font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: 12px; min-height: 18px; color: var(--green);
+    }
+    .save-status.error { color: var(--danger); }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 36px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+      text-align: center; font-size: 11px; color: var(--muted);
+    }
+    .page-footer a { color: var(--accent); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+
+    #sheet-section { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand-icon">🔖</div>
+    <h1>DocRefGen</h1>
+    <span class="topbar-sub">Settings</span>
+  </div>
+
+  <div class="page">
+
+    <!-- About -->
+    <div class="about-card">
+      <h2>About DocRefGen</h2>
+      <p>
+        DocRefGen generates unique reference numbers for your HR and Legal documents in Google Docs —
+        and keeps a searchable audit log of every document created. Helps you manage your documents better.
+        Designed for small teams that need traceable, auditable records without the overhead of a full DMS.
+      </p>
+
+      <ul class="features-list">
+        <li>Place <code>{{DOC-REF-NO}}</code> anywhere in your Google Doc template — in the body, header, or footer. When the doc is open, click <strong>Generate Ref &amp; Insert</strong> in the popup — done.</li>
+        <li>Use it as a generator only, or use it as an audit trail tool too — your choice.</li>
+        <li>Audit trail — add your Google Sheet ID in Settings. Once linked, every time you generate a ref number, one click logs it to your audit sheet. Helps you find any doc later by reference number.</li>
+        <li>Each team can use this independently and maintain their own audit — HR, Finance, Legal, etc.</li>
+      </ul>
+
+      <p>Built by <a href="https://x.com/abhikuchbhi" target="_blank">@abhikuchbhi</a></p>
+    </div>
+
+    <!-- Live preview -->
+    <div class="preview-bar">
+      <div><div class="preview-label">Your ref number will look like</div></div>
+      <div class="preview-value" id="live-preview">AMZ-2026-847293</div>
+    </div>
+
+    <!-- Ref format -->
+    <div class="section">
+      <div class="section-title">Reference Format</div>
+
+      <div class="field">
+        <label>Company Prefix <span style="color:#dc2626">*</span></label>
+        <input type="text" id="company-prefix" placeholder="AMZ" maxlength="5"/>
+        <div class="hint">2–5 uppercase letters. Your company shortcode. e.g. "AMZ" for Amazon, "MSFT" for Microsoft.</div>
+      </div>
+
+      <div class="field">
+        <label>Document Type Prefix <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" id="doc-type-prefix" placeholder="EMP" maxlength="6"/>
+        <div class="hint">e.g. EMP · ESOP · AGR · RML · NDA — leave blank to skip.</div>
+      </div>
+    </div>
+
+    <!-- Audit trail -->
+    <div class="section">
+      <div class="section-title">Audit Trail</div>
+
+      <div class="toggle-field">
+        <div>
+          <label>Enable Audit Log</label>
+          <div class="hint">Log each ref number to a Google Sheet with one click.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="audit-toggle"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div id="sheet-section">
+        <div class="field">
+          <label>Google Sheet ID or URL</label>
+          <input type="text" class="sheet-input" id="sheet-id"
+            placeholder="Paste your Google Sheet URL or ID"/>
+          <div class="hint">One sheet for all docs, forever. Each team can maintain their own separate sheet.</div>
+          <button class="verify-btn" id="verify-btn">Verify &amp; Connect →</button>
+          <div class="sheet-status" id="sheet-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="save-btn">Save Settings</button>
+      <button class="btn btn-secondary" id="reset-btn">Reset All</button>
+    </div>
+
+    <div class="save-status" id="save-status"></div>
+
+    <div class="page-footer">
+      DocRefGen v1.0.0 · Built by <a href="https://x.com/abhikuchbhi" target="_blank">@abhikuchbhi</a>
+    </div>
+
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
