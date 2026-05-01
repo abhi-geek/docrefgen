@@ -173,4 +173,6 @@ To go public:
 
 ## License
 
+Privacy Policy - https://abhi-geek.github.io/docrefgen/PRIVACY_POLICY
+
 MIT — do what you want with it.
