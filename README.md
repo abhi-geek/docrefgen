@@ -64,6 +64,6 @@ Works in the document body, header, and footer.
 
 ## License
 
-Privacy Policy - [Privacy Policy Link](https://abhi-geek.github.io/docrefgen/PRIVACY_POLICY) 
+Privacy Policy - [Privacy Policy Link](https://docrefgen.abhikuchbhi.in/PRIVACY_POLICY) 
 
 MIT — do what you want with it.
