@@ -29,7 +29,6 @@ function showRef(ref) {
   box.classList.remove('empty');
   document.getElementById('ref-value').textContent = ref;
   document.getElementById('btn-copy').disabled = false;
-  // Reset log button to ready state
   const logBtn = document.getElementById('btn-log');
   logBtn.classList.remove('logged');
   logBtn.disabled = false;
@@ -40,6 +39,21 @@ function showOAuthWarning(visible) {
   document.getElementById('oauth-warning').classList.toggle('visible', visible);
 }
 
+// Retries chrome.tabs.sendMessage up to maxRetries times with delayMs between each attempt.
+// Does not retry on "Extension context invalidated" — that requires a page reload.
+async function sendMessageWithRetry(tabId, message, maxRetries = 3, delayMs = 500) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await chrome.tabs.sendMessage(tabId, message);
+    } catch (err) {
+      const msg = err?.message || '';
+      if (/context invalidated/i.test(msg)) throw err;
+      if (attempt === maxRetries) throw err;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+}
+
 async function init() {
   const tab = await getCurrentTab();
   const isGoogleDoc = tab?.url?.includes('docs.google.com/document');
@@ -48,12 +62,19 @@ async function init() {
   document.getElementById('main-state').style.display = isGoogleDoc ? 'block' : 'none';
   if (!isGoogleDoc) return;
 
-  // Get doc info
+  // Show loading feedback while the content script may still be injecting.
+  setFeedback('Loading…');
+
   try {
-    const info = await chrome.tabs.sendMessage(tab.id, { type: 'GET_DOC_INFO' });
+    const info = await sendMessageWithRetry(tab.id, { type: 'GET_DOC_INFO' });
+    setFeedback('');
     document.getElementById('doc-title').textContent = info?.title || 'Untitled';
 
     if (info?.error) {
+      if (info.error === 'CONTEXT_INVALIDATED') {
+        setPlaceholderStatus('error', 'Extension updated — reload this page');
+        return;
+      }
       const isAuthErr = /token|oauth|permission|401|403/i.test(info.error);
       if (isAuthErr) showOAuthWarning(true);
       setPlaceholderStatus('error', 'API error — check OAuth setup');
@@ -71,7 +92,14 @@ async function init() {
       setPlaceholderStatus('missing', '{{DOC-REF-NO}} not found');
     }
 
-  } catch {
+  } catch (err) {
+    setFeedback('');
+    const msg = err?.message || '';
+    if (/context invalidated/i.test(msg)) {
+      document.getElementById('doc-title').textContent = '';
+      setPlaceholderStatus('error', 'Extension updated — reload this page');
+      return;
+    }
     document.getElementById('doc-title').textContent = 'Could not read doc';
     setPlaceholderStatus('error', 'Reload the doc and try again');
   }
@@ -83,7 +111,7 @@ async function init() {
     btn.textContent = 'Working…';
 
     try {
-      const result = await chrome.tabs.sendMessage(tab.id, { type: 'GENERATE_AND_INSERT' });
+      const result = await sendMessageWithRetry(tab.id, { type: 'GENERATE_AND_INSERT' });
 
       if (result?.success) {
         showRef(result.refNumber);
@@ -91,17 +119,24 @@ async function init() {
         setFeedback('✅ Inserted into doc.');
       } else {
         const reason = result?.reason || 'Unknown error';
-        const isAuthErr = /token|401|403/i.test(reason);
-        if (isAuthErr) showOAuthWarning(true);
-        if (reason === 'no_placeholder') {
+        if (reason === 'CONTEXT_INVALIDATED') {
+          setPlaceholderStatus('error', 'Extension updated — reload this page');
+        } else if (reason === 'no_placeholder') {
           setPlaceholderStatus('missing', '{{DOC-REF-NO}} not found');
           setFeedback('Add {{DOC-REF-NO}} to your doc first.', 'warn');
         } else {
+          const isAuthErr = /token|401|403/i.test(reason);
+          if (isAuthErr) showOAuthWarning(true);
           setFeedback(reason, 'error');
         }
       }
-    } catch {
-      setFeedback('Could not reach doc. Reload and try again.', 'error');
+    } catch (err) {
+      const msg = err?.message || '';
+      if (/context invalidated/i.test(msg)) {
+        setPlaceholderStatus('error', 'Extension updated — reload this page');
+      } else {
+        setFeedback('Could not reach doc. Reload and try again.', 'error');
+      }
     }
 
     btn.disabled = false;
@@ -137,7 +172,6 @@ async function init() {
     btn.disabled = true;
     btn.textContent = 'Logging…';
 
-    // Use lastGeneratedRef if available, else use whatever ref is showing
     const refToLog = lastGeneratedRef || document.getElementById('ref-value').textContent;
 
     try {
@@ -160,12 +194,12 @@ async function init() {
         btn.innerHTML = '✓ Logged to Sheet';
         btn.disabled = true;
       } else {
-        setFeedback(`Sheet error: ${result?.reason || 'unknown'}`, 'error');
+        setFeedback(result?.reason || 'Sheet error — try again.', 'error');
         btn.disabled = false;
         btn.innerHTML = '↗ Log to Audit Sheet';
       }
     } catch {
-      setFeedback('Could not log to sheet.', 'error');
+      setFeedback('Could not log to sheet — check your connection.', 'error');
       btn.disabled = false;
       btn.innerHTML = '↗ Log to Audit Sheet';
     }

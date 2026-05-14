@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "DocRefGen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate unique reference numbers for HR & Legal Google Docs. Designed for teams that need traceable, auditable document records.",
-  "author": "https://x.com/abhikuchbhi",
+  "author": " https://abhikuchbhi.in | https://x.com/abhikuchbhi",
   "permissions": [
     "storage",
     "identity",

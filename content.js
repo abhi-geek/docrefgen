@@ -22,14 +22,50 @@ function isCopyDoc() {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
-function getAuthToken() {
+// staleToken: when provided, background removes it from cache before issuing a fresh one.
+function getAuthToken(staleToken = null) {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ type: 'GET_AUTH_TOKEN' }, (res) => {
-      if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+    const msg = { type: 'GET_AUTH_TOKEN' };
+    if (staleToken) { msg.forceRefresh = true; msg.staleToken = staleToken; }
+    chrome.runtime.sendMessage(msg, (res) => {
+      if (chrome.runtime.lastError) {
+        const err = chrome.runtime.lastError.message || '';
+        // Extension was updated while page was open — content script context is severed.
+        if (/context invalidated/i.test(err)) return reject(new Error('CONTEXT_INVALIDATED'));
+        return reject(new Error(err));
+      }
       if (!res?.token) return reject(new Error(res?.error || 'No token returned'));
       resolve(res.token);
     });
   });
+}
+
+// ── Fetch Helpers ─────────────────────────────────────────────────────────────
+
+// Wraps fetch with a 10s AbortController timeout.
+function timedFetch(url, options) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), 10_000);
+  return fetch(url, { ...options, signal: ctrl.signal })
+    .finally(() => clearTimeout(id))
+    .catch((err) => {
+      if (err.name === 'AbortError') throw new Error('Connection timed out — try again.');
+      throw err;
+    });
+}
+
+// Adds Authorization header; on 401 forces a token refresh via background and retries once.
+async function fetchDocApi(token, url, options = {}) {
+  const { headers: extra = {}, ...rest } = options;
+  const makeReq = (tok) =>
+    timedFetch(url, { ...rest, headers: { ...extra, Authorization: `Bearer ${tok}` } });
+
+  let res = await makeReq(token);
+  if (res.status === 401) {
+    const fresh = await getAuthToken(token); // pass stale token to force cache removal
+    res = await makeReq(fresh);
+  }
+  return res;
 }
 
 // ── Extract text from a list of structural elements ───────────────────────────
@@ -38,7 +74,6 @@ function extractTextFromElements(elements = []) {
   let text = '';
   for (const el of elements) {
     text += el.textRun?.content || '';
-    // Handle tables
     if (el.table) {
       for (const row of (el.table.tableRows || [])) {
         for (const cell of (row.tableCells || [])) {
@@ -68,9 +103,7 @@ async function getDocData() {
 
   try {
     const token = await getAuthToken();
-    const res = await fetch(`https://docs.googleapis.com/v1/documents/${docId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await fetchDocApi(token, `https://docs.googleapis.com/v1/documents/${docId}`);
 
     if (res.status === 401 || res.status === 403) {
       return { text: '', docData: null, error: 'Permission denied. Check OAuth scopes.' };
@@ -81,16 +114,10 @@ async function getDocData() {
 
     const data = await res.json();
     let text = '';
-
-    // 1. Body content
     text += extractTextFromContent(data?.body?.content || []);
-
-    // 2. Headers — stored as a map keyed by headerId
     for (const header of Object.values(data?.headers || {})) {
       text += extractTextFromContent(header.content || []);
     }
-
-    // 3. Footers — stored as a map keyed by footerId
     for (const footer of Object.values(data?.footers || {})) {
       text += extractTextFromContent(footer.content || []);
     }
@@ -109,12 +136,9 @@ async function replaceInDoc(searchText, replaceText) {
   if (!docId) throw new Error('No document ID found in URL.');
 
   const token = await getAuthToken();
-  const res = await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
+  const res = await fetchDocApi(token, `https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       requests: [{
         replaceAllText: {
@@ -126,7 +150,7 @@ async function replaceInDoc(searchText, replaceText) {
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data?.error || data));
+  if (!res.ok) throw new Error(data?.error?.message || `Docs API error: ${res.status}`);
   return data.replies?.[0]?.replaceAllText?.occurrencesChanged || 0;
 }
 
