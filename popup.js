@@ -22,6 +22,19 @@ function setPlaceholderStatus(type, text) {
   textEl.textContent = text;
 }
 
+async function copyToClipboard(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+  } catch {
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  }
+}
+
 function showRef(ref) {
   lastGeneratedRef = ref;
   alreadyLogged = false;
@@ -60,6 +73,9 @@ async function init() {
 
   document.getElementById('not-doc-state').style.display = isGoogleDoc ? 'none' : 'block';
   document.getElementById('main-state').style.display = isGoogleDoc ? 'block' : 'none';
+  const aboutCopyBtn = document.getElementById('btn-copy-ph-about');
+  if (aboutCopyBtn) aboutCopyBtn.addEventListener('click', () => copyToClipboard('{{DOC-REF-NO}}', aboutCopyBtn));
+
   if (!isGoogleDoc) return;
 
   // Show loading feedback while the content script may still be injecting.
@@ -205,13 +221,17 @@ async function init() {
     }
   });
 
-  // ── Settings ──────────────────────────────────────────────────────────────
-  ['open-settings', 'open-settings-footer'].forEach(id => {
-    document.getElementById(id)?.addEventListener('click', (e) => {
-      e.preventDefault();
-      chrome.runtime.openOptionsPage();
-    });
-  });
+  // ── Copy placeholder ──────────────────────────────────────────────────────
+  const mainCopyPhBtn = document.getElementById('btn-copy-ph-main');
+  if (mainCopyPhBtn) mainCopyPhBtn.addEventListener('click', () => copyToClipboard('{{DOC-REF-NO}}', mainCopyPhBtn));
 }
+
+// Settings listeners registered outside init so they work even when init returns early due to errors
+['open-settings', 'open-settings-footer'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  });
+});
 
 init();

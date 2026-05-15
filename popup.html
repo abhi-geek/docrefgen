@@ -204,12 +204,111 @@
     .oauth-warning.visible { display: block; }
     .oauth-warning strong { display: block; margin-bottom: 2px; }
 
-    /* Not a doc */
+    /* Not a doc — About section */
     .not-doc {
-      text-align: center; padding: 28px 16px 20px; color: var(--muted);
+      padding: 16px;
     }
-    .not-doc .icon { font-size: 30px; margin-bottom: 8px; }
-    .not-doc p { font-size: 12px; line-height: 1.6; }
+
+    .about-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--text); margin-bottom: 8px;
+    }
+
+    .about-text {
+      font-size: 12px; color: var(--muted);
+      line-height: 1.6; margin-bottom: 14px;
+    }
+
+    .how-title {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--muted);
+      font-weight: 500; margin-bottom: 8px;
+    }
+
+    .how-steps { margin-bottom: 14px; }
+
+    .how-step {
+      display: flex; align-items: flex-start;
+      gap: 8px; margin-bottom: 7px;
+      font-size: 12px; color: var(--text); line-height: 1.5;
+    }
+
+    .step-arrow {
+      color: var(--accent); flex-shrink: 0;
+      font-weight: 600; margin-top: 1px;
+    }
+
+    .ph-chip {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      background: #eff6ff; color: var(--accent);
+      border: 1px solid #bfdbfe;
+      border-radius: 4px; padding: 1px 5px;
+      white-space: nowrap; word-break: keep-all;
+      overflow-wrap: normal; hyphens: none;
+    }
+
+    .placeholder-copy-row {
+      display: flex; align-items: center;
+      gap: 8px; padding: 9px 11px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 12px;
+    }
+
+    .placeholder-copy-label {
+      font-size: 10px; color: var(--muted);
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .placeholder-copy-row .ph-chip { flex: 1; }
+
+    .btn-tiny-copy {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 5px;
+      border: 1px solid var(--accent);
+      background: transparent; color: var(--accent);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .btn-tiny-copy:hover { background: var(--accent); color: #fff; }
+    .btn-tiny-copy.copied { background: var(--green); border-color: var(--green); color: #fff; }
+
+    .ref-example-box {
+      background: #111827; border-radius: 8px;
+      padding: 10px 13px; margin-bottom: 12px;
+    }
+    .example-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; letter-spacing: 1px;
+      color: #6b7280; margin-bottom: 4px; text-transform: uppercase;
+    }
+    .example-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 17px; font-weight: 600;
+      color: #34d399; letter-spacing: 0.5px;
+    }
+
+    .open-doc-hint {
+      font-size: 11px; color: var(--muted);
+      text-align: center; padding-top: 4px;
+    }
+
+    /* Inline placeholder copy row — inside main state */
+    .ph-copy-inline {
+      display: flex; align-items: center;
+      gap: 8px; padding: 7px 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 7px; margin-bottom: 10px;
+    }
+    .ph-copy-inline .ph-chip { flex: 1; }
+    .ph-copy-inline-label {
+      font-size: 10px; color: var(--accent);
+      white-space: nowrap; flex-shrink: 0;
+    }
 
     /* Footer */
     .footer {
@@ -235,10 +334,39 @@
     <a class="settings-link" id="open-settings" title="Settings">⚙</a>
   </div>
 
-  <!-- Not a Google Doc -->
+  <!-- Not a Google Doc — About panel -->
   <div class="not-doc" id="not-doc-state" style="display:none">
-    <div class="icon">📄</div>
-    <p>Open a Google Doc to use DocRefGen.</p>
+    <div class="about-title">About DocRefGen</div>
+    <p class="about-text">Generates unique reference numbers for your HR and Legal documents in Google Docs — and keeps a searchable audit log of every document created.</p>
+
+    <div class="how-title">How to use</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="step-arrow">→</span>
+        <span>Add <span class="ph-chip">{{DOC-REF-NO}}</span> to your doc — body, header, or footer</span>
+      </div>
+      <div class="how-step">
+        <span class="step-arrow">→</span>
+        <span>Come back here and click <strong>Generate Ref &amp; Insert</strong></span>
+      </div>
+      <div class="how-step">
+        <span class="step-arrow">→</span>
+        <span>The placeholder is replaced with a unique, traceable reference number</span>
+      </div>
+    </div>
+
+    <div class="placeholder-copy-row">
+      <span class="placeholder-copy-label">Copy placeholder:</span>
+      <span class="ph-chip">{{DOC-REF-NO}}</span>
+      <button class="btn-tiny-copy" id="btn-copy-ph-about">Copy</button>
+    </div>
+
+    <div class="ref-example-box">
+      <div class="example-label">Your ref will look like</div>
+      <div class="example-value">AMZ-2026-500259</div>
+    </div>
+
+    <p class="open-doc-hint">Open a Google Doc to get started</p>
   </div>
 
   <!-- Main UI -->
@@ -248,7 +376,6 @@
       <!-- OAuth warning -->
       <div class="oauth-warning" id="oauth-warning">
         <strong>⚠ OAuth not configured</strong>
-        Add your Google OAuth Client ID to manifest.json and reload.
       </div>
 
       <!-- Doc card — just title -->
@@ -263,6 +390,13 @@
         <span id="placeholder-text">Checking…</span>
       </div>
 
+      <!-- Copy placeholder — always visible so user can copy and add to doc -->
+      <div class="ph-copy-inline" id="ph-copy-inline">
+        <span class="ph-copy-inline-label">Placeholder:</span>
+        <span class="ph-chip">{{DOC-REF-NO}}</span>
+        <button class="btn-tiny-copy" id="btn-copy-ph-main">Copy</button>
+      </div>
+
       <!-- Ref number box -->
       <div class="ref-box empty" id="ref-box">
         <div class="ref-box-label">Reference Number</div>
@@ -274,17 +408,13 @@
 
       <!-- Actions -->
       <button class="btn btn-primary" id="btn-generate">
-        ✦ Generate Ref &amp; Insert into Doc
-      </button>
-
-      <button class="btn btn-secondary" id="btn-copy" disabled>
-        ⎘ Copy Ref Number
+        Generate  &amp; Insert
       </button>
 
       <div class="divider"></div>
 
       <button class="btn btn-log" id="btn-log">
-        ↗ Log to Audit Sheet
+        Log to Audit Sheet
       </button>
 
     </div>
@@ -295,7 +425,7 @@
       <div class="status-dot"></div>
       <span>Active</span>
     </div>
-    <a href="#" id="open-settings-footer">Settings ⚙</a>
+    <a href="#" id="open-settings-footer">Settings</a>
   </div>
 
   <script src="popup.js"></script>
