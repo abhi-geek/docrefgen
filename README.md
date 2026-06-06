@@ -61,6 +61,13 @@ Works in the document body, header, and footer.
 |---|---|---|---|---|---|
 
 ---
+## Story behind the Tool 
+
+While running a company I realised, I am generating so many documents across Finance, Legal, HR, Business etc, and many of the times I need to reference a document in email or conversation or in legal letters as a version or sometime i need to see which document i had sent out. I looked for tools but most of the document management tools are suites and expensive. I tried building google scripts and sheets but that approach was not scalable. Thus, I build a chrome extension, now my entire team uses this, we have a common audit log sheet to audit and all the documents have uniformity, without spending a penny. 
+Hope this helps you and your team too. 
+If it does, dont forget to give a shoutout to me on Twitter :P 
+abhikuchbhi.in
+---
 
 ## License
 
